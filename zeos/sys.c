@@ -20,6 +20,8 @@
 #define LECTURA 0
 #define ESCRIPTURA 1
 
+int PID_ = 100;
+
 int check_fd(int fd, int permissions)
 {
   if (fd!=1) return -EBADF; 
@@ -38,8 +40,8 @@ int sys_getpid()
 }
 
 int sys_fork()
-{
-  int PID;
+{ 
+  int PID=-1;
   struct list_head *pointer;
   struct task_struct *child_task, *curr_task;
   union task_union *child_union, *curr_union;
@@ -60,7 +62,7 @@ int sys_fork()
   curr_task = current();
   curr_union = (union task_union *)curr_task;
 
-  /* Copy the parent’s task_union to the child // new directory */
+  /* Copy the parent’s task_union to the child + new directory */
   copy_data(curr_union,child_union,sizeof(union task_union));
   allocate_DIR(child_task);
   
@@ -76,13 +78,36 @@ int sys_fork()
   
   child_pt = get_PT(child_task);
   curr_pt = get_PT(curr_task);
+  int logical_page; //del hijo!
   
-  /* CODE */  
-  for (i=0; pag < NUM_PAG_CODE; i++) 
-    child_pt[PAG_LOG_INIT_CODE + i].entry = curr_pt[PAG_LOG_INIT_CODE + i].entry;
+  /* Copiamos entradas de código + código del sistema y los datos (comparten) */  
+  for (logical_page = 0; logical_page < NUM_PAG_KERNEL + NUM_PAG_CODE; ++logical_page) {
+	  int frame = get_frame(curr_pt, logical_page); //del padre!
+	  set_ss_pag(child_pt, logical_page, frame);
+  }
   
-  /* DATA+STACK */
-   
+  /* Copiamos entradas DATA+STACK (NO comparten) --> esto se ve genial en el power de teoria*/
+  
+  /* Hacemos que las entradas de la TP(child) apunten a los nuevos frames para el child_process(que tengo en frames[]) */
+  while (logical_page < NUM_PAG_KERNEL + NUM_PAG_CODE + NUM_PAG_DATA) {
+	 set_ss_pag(child_pt, logical_page, frames[logical_page - (NUM_PAG_KERNEL + NUM_PAG_CODE)]);
+	 ++logical_page;
+  }
+  /* La magia: 
+   * 1. Asigno entradas de la TP(current) a los nuevos frames (temporal free entries) 
+   * 2. Copio las paginas data+stack del proceso current en estas temporal free entries (es decir, después de NUM_PAG_KERNEL + NUM_PAG_CODE + NUM_PAG_DATA)
+   * 3. Libero el acceso que tenia el padre a los nuevos frames y como child_tp ya apunta al sitio correcto; he acabado*/
+  for (i = 0; i <NUM_PAG_DATA; ++i) {
+	  set_ss_pag(curr_pt,  NUM_PAG_KERNEL + NUM_PAG_CODE + NUM_PAG_DATA + i, frames[i]);
+	  copy_data((void *)((NUM_PAG_KERNEL + NUM_PAG_CODE + i) * PAGE_SIZE), (void *)((NUM_PAG_KERNEL + NUM_PAG_CODE + NUM_PAG_DATA + i) * PAGE_SIZE), PAGE_SIZE);
+	  del_ss_pag(curr_pt, NUM_PAG_KERNEL + NUM_PAG_CODE + NUM_PAG_DATA + i);
+  }
+  set_cr3(get_DIR(curr_task)); //flush TLB
+  
+  child_task->PID = ++PID_;
+  PID = child_task->PID;
+  
+  
   return PID;
 }
 
