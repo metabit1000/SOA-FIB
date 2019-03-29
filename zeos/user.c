@@ -37,7 +37,7 @@ int __attribute__ ((__section__(".text.main")))
 	write(1,"FUNCIONA EL WRITE\n",18); 
 	perror();
 	
-	int aux = getpid();
+	int aux = fork();
 	char res[64];
 	itoa(aux,res);
 	write(1,"El pid del proceso es: ",23); 

@@ -29,6 +29,11 @@ int check_fd(int fd, int permissions)
   return 0;
 }
 
+int ret_from_fork()
+{
+	return 0;
+}
+
 int sys_ni_syscall()
 {
 	return -38; /*ENOSYS*/
@@ -104,9 +109,17 @@ int sys_fork()
   }
   set_cr3(get_DIR(curr_task)); //flush TLB
   
+  /* Assign a new PID to the process */  
   child_task->PID = ++PID_;
   PID = child_task->PID;
   
+  /* Actualizar el task_switch */
+  child_task->kernel_esp = (unsigned long *)&child_union->stack[KERNEL_STACK_SIZE-19];
+  child_union->stack[KERNEL_STACK_SIZE-19] = 0;
+  child_union->stack[KERNEL_STACK_SIZE-18] = (int)ret_from_fork;
+  
+  /* Insert the new process into the ready list */
+  list_add_tail(&child_task->list, &readyqueue);
   
   return PID;
 }
