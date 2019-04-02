@@ -76,4 +76,5 @@ int write (int fd,char* buffer,int size); // version sysenter
 int gettime();
 int getpid(void);
 int fork(void);
+void exit(void);
 

@@ -35,20 +35,33 @@ int __attribute__ ((__section__(".text.main")))
 	suma = add2(3,4);
 	write(1,"\n",1);
 	write(1,"FUNCIONA EL WRITE\n",18); 
-	perror();
 	
-	int aux = fork();
-	char res[64];
-	itoa(aux,res);
-	write(1,"El pid del proceso es: ",23); 
-	write(1,res,strlen(res)); 
-	
-	while(1) {
-		/* Gettime() test
-		int aux = gettime();
+	int PID = fork();
+	if (PID == 0){
+		char buffer[] = "Soy un hijo, con el PID: "; //Porque no me escribe estooo??
+		int aux = getpid();
 		char res[64];
 		itoa(aux,res);
-		write(1,res,strlen(res)); */
+		write(1,buffer,strlen(buffer));
+		write(1,res,strlen(res));
+		exit();		
+	}
+	else {	
+		char buffer[] = "\nSoy el padre, con el PID: ";
+		int aux = getpid();
+		char res[64];
+		itoa(aux,res);
+		write(1,buffer,strlen(buffer));
+		write(1,res,strlen(res));
+		exit();
+	}
+	
+	perror();
+	while(1) {
+		//int aux = getpid();
+		//char res[64];
+		//itoa(aux,res);
+		//write(1,res,strlen(res)); 
 	}
 	return 0;
 }

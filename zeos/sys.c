@@ -114,18 +114,19 @@ int sys_fork()
   PID = child_task->PID;
   
   /* Actualizar el task_switch */
-  child_task->kernel_esp = (unsigned long *)&child_union->stack[KERNEL_STACK_SIZE-19];
   child_union->stack[KERNEL_STACK_SIZE-19] = 0;
-  child_union->stack[KERNEL_STACK_SIZE-18] = (int)ret_from_fork;
-  
-  /* Insert the new process into the ready list */
+  child_union->stack[KERNEL_STACK_SIZE-18] = (unsigned int)ret_from_fork;
+  child_task->kernel_esp = (unsigned long *)&child_union->stack[KERNEL_STACK_SIZE-19];
+
+  /* Insert the new process into the ready queue */
   list_add_tail(&child_task->list, &readyqueue);
   
   return PID;
-}
+} 
 
 void sys_exit()
 {  
+	
 }
 
 int sys_write(int fd, char * buffer, int size) {

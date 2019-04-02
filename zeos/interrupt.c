@@ -99,7 +99,7 @@ void keyboard_routine() {  //colocamos el result arriba a la izquierda, por tant
 void clock_routine() {
 	zeos_ticks++;
 	zeos_show_clock();
-	
+	schedule(); //para probar el Round Robin
 }
 
 void setIdt()

@@ -77,3 +77,19 @@ ENTRY(fork)
 fork_ret: 
 	popl %ebp
 	ret
+
+ENTRY(exit)
+	pushl %ebp
+	movl %esp,%ebp
+	
+	movl $1,%eax
+	
+	pushl $exit_ret
+	
+	pushl %ebp
+	movl %esp,%ebp
+	
+	sysenter
+exit_ret: 
+	popl %ebp
+	ret

@@ -25,6 +25,8 @@ struct task_struct { //PCB
   unsigned long kernel_esp; //variable para guardar la posicion en la pila donde esta el valor inicial para ebp
   page_table_entry * dir_pages_baseAddr;  //direccion del directorio que contiene la tabla de paginas
   struct list_head list;  //necesario para encolar (a falta de memoria dinamica)
+  int quantum;  //quantum proceso (ticks que un proceso tiene la CPU)
+  enum state_t estado;  //estado del proceso (running,ready o blocked)
 };
 
 union task_union {
