@@ -126,7 +126,18 @@ int sys_fork()
 
 void sys_exit()
 {  
+	int i;
+	page_table_entry *PT = get_PT(current());
+	for (i = 0; i < NUM_PAG_DATA; ++i) {
+			int frame = get_frame(PT,PAG_LOG_INIT_DATA+i); //consigo la traducción de mem fisica
+			free_frame(frame); //Marco como free el frame
+			del_ss_pag(PT,PAG_LOG_INIT_DATA+i); //Elimino la traduccion en la tabla de paginas
+	}
 	
+	list_add_tail(&(current()->list), &freequeue); //Pasa el proceso a estar free
+	current()->PID=-1;
+	
+	sched_next_rr();  //Select the next process to execute
 }
 
 int sys_write(int fd, char * buffer, int size) {
