@@ -1,0 +1,8 @@
+Para probar sockets:
+1. Iniciar sesión del servidor con:  ./serverSocket 5001 (debe ser mayor de 5000)
+2. Comenzar la comunicación (esta vez queremos varios clientes, para ver la concurrencia) 
+con: ./launchClient 6 10 127.0.0.1 5001 (6 numero clientes, 10 es el num de mensajes a enviar)
+
+---------------------
+Se recomienda usar strace.
+

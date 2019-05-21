@@ -28,7 +28,7 @@ int createServerSocket (int port)
 		perror ("Error creando el socket");
 		exit(1);
 	}
-	err = bind (fd, (struct sockaddr*) &direccion, sizeof(direccion));
+	err = bind (fd, &direccion, sizeof(direccion));
 	if (err < 0) {
 		perror ("Error en asociar la direccion publica; funcion bind()");
 		exit(1);
